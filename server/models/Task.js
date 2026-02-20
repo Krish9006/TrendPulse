@@ -1,14 +1,19 @@
 const mongoose = require('mongoose');
 
 const TaskSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     topic: {
         type: String,
         required: true,
         trim: true
     },
     frequency: {
-        type: String, // e.g., "every 1 hour", "0 * * * *"
-        default: '0 * * * *' // Default hourly
+        type: String,
+        default: '0 * * * *'
     },
     isActive: {
         type: Boolean,
@@ -24,3 +29,4 @@ const TaskSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Task', TaskSchema);
+

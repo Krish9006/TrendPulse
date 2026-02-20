@@ -34,10 +34,13 @@ app.get('/', (req, res) => {
 // Import Routes
 const taskRoutes = require('./routes/tasks');
 const analysisRoutes = require('./routes/analysis');
+const authRoutes = require('./routes/auth');
 
 // Use Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/analysis', analysisRoutes);
+
 
 const { initScheduler } = require('./services/scheduler');
 // Start Scheduler

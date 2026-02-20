@@ -51,6 +51,7 @@ async function processTask(task) {
         // 3. Save Result
         const result = new AnalysisResult({
             taskId: task._id,
+            userId: task.userId,
             summary: analysis.summary,
             sentiment: analysis.sentiment,
             insight: analysis.insight,

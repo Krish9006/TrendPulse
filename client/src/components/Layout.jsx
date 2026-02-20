@@ -1,7 +1,8 @@
 import React from 'react';
-import { Bot, LayoutDashboard, Database } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Bot, LayoutDashboard, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+import { useAuth } from '../context/AuthContext';
 
 const NavItem = ({ to, icon: Icon, label }) => {
     const location = useLocation();
@@ -27,6 +28,14 @@ const NavItem = ({ to, icon: Icon, label }) => {
 };
 
 const Layout = ({ children }) => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
         <div className="flex min-h-screen bg-slate-950 text-white overflow-hidden selection:bg-emerald-500/30">
 
@@ -44,12 +53,35 @@ const Layout = ({ children }) => {
                 <nav className="space-y-2 flex-1">
                     <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
                     <NavItem to="/chat" icon={Bot} label="AI Assistant" />
-                    {/* <NavItem to="/data" icon={Database} label="Data & Logs" /> */}
                 </nav>
 
-                <div className="mt-auto pt-6 border-t border-white/10">
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5">
-                        <h4 className="text-xs font-semibold text-indigo-300 mb-1">Status</h4>
+                <div className="mt-auto pt-6 border-t border-white/10 space-y-3">
+                    {/* User Info */}
+                    {user && (
+                        <div className="px-2">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-slate-900 font-bold text-sm flex-shrink-0">
+                                    {user.name?.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Logout */}
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                    >
+                        <LogOut size={18} />
+                        <span className="text-sm font-medium">Sign out</span>
+                    </button>
+
+                    {/* Status */}
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5">
                         <div className="flex items-center gap-2 text-xs text-gray-400">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             Backend Active

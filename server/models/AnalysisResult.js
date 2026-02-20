@@ -6,6 +6,12 @@ const AnalysisResultSchema = new mongoose.Schema({
         ref: 'Task',
         required: true
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+
     summary: {
         type: String,
         required: true

@@ -163,25 +163,34 @@ Return JSON ONLY: {
 
 | Feature | Why It's Innovative |
 |---|---|
+| **🔐 Secure Auth** | JWT-based per-user isolation — tasks and insights are strictly private |
 | **Natural Language → Cron** | Users say "daily" or "every 2 hours" — Gemini converts to exact cron format |
-| **Duplicate Prevention** | Same topic typed twice? AI detects and skips — no clutter |
+| **Duplicate Prevention** | Scoped per user — same topic detected and skipped |
 | **Sentiment Trends** | Track how sentiment changes over time for the same topic |
-| **Mock-First Design** | Zero-config demo mode — evaluators can test without any API setup |
+| **Mock-First Design** | Zero-config demo mode for core AI features |
 | **Modular AI Layer** | Swap Gemini → OpenAI → DeepSeek with one env variable change |
 
 ---
 
-## 7. Resilience & Error Handling
-
-- **No AI Key:** Falls back to regex-based mock intent parser and template insights
-- **No News Key:** Falls back to pre-defined sample news templates per topic
-- **DB Unavailable:** Server boots and serves API (MongoDB error is logged, not fatal)
-- **Gemini Rate Limit:** Catches error, returns mock response, logs warning
+## 7. Authentication & Security
+- **JWT Architecture:** Stateless authentication using JSON Web Tokens.
+- **Password Security:** Hashed using `bcryptjs` with 12 salt rounds.
+- **Data Isolation:** All database queries are filtered by `userId` in the middle layer.
+- **Frontend Protection:** React context-based private routes ensure only logged-in users access the dashboard.
 
 ---
 
-## 8. Scalability Considerations
+## 8. Resilience & Error Handling
+- **Invalid Tokens:** Automatic logout on 401 response from backend.
+- **No AI Key:** Falls back to regex-based mock intent parser and template insights.
+- **No News Key:** Falls back to pre-defined sample news templates per topic.
+- **DB Unavailable:** Server boots and serves API (MongoDB error is logged, not fatal).
+- **Gemini Rate Limit:** Catches error, returns mock response, logs warning.
 
-- **Queue-based execution:** Currently synchronous; can be upgraded to Bull/BullMQ queue
-- **Horizontal scaling:** Stateless Express server — easily containerized with Docker
-- **Multi-user:** Task model can be extended with `userId` field for user isolation
+---
+
+## 9. Scalability Considerations
+- **Queue-based execution:** Currently synchronous; can be upgraded to Bull/BullMQ queue.
+- **Horizontal scaling:** Stateless Express server — easily containerized with Docker.
+- **Multi-user ready:** Full authentication system allows multi-tenant scaling out of the box.
+

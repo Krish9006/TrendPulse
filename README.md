@@ -7,27 +7,27 @@ TrendPulse lets users define tracking tasks via natural language. The backend au
 
 ## ✨ Features
 
-| Feature | Description |
+| Feature | Why |
 |---|---|
-| 💬 **Conversational Config** | Type `"Track Bitcoin every hour"` → AI creates the scheduled task automatically |
-| 🤖 **AI-Powered Analysis** | Google Gemini analyzes fetched news → returns `summary`, `sentiment`, and `insight` |
-| 📅 **Auto Scheduled Tasks** | `node-cron` runs tasks at user-defined frequencies (hourly, daily, custom cron) |
-| 📊 **Real-time Dashboard** | Live view of active trackers and all incoming AI insights |
-| 🗑️ **Task Management** | Delete tasks directly from the dashboard |
-| 🛡️ **Resilient Architecture** | Full Mock Mode fallback — works without API keys for demo/testing |
+| **🔒 User Auth** | JWT-based Signup/Login — your tasks are private to you |
+| **🤖 Gemini AI** | Direct integration with Google's latest `gemini-2.5-flash` |
+| **💬 AI Chat** | Configure tracking tasks using natural language |
+| **📊 Dashboard** | AI-generated summary, sentiment analysis, and insights |
+| **⏰ Automated** | Tasks run on schedule using `node-cron` |
+| **🗑️ Manage** | Pause or Delete trackers with one click |
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer | Technology |
+| Component | Technologies |
 |---|---|
-| Frontend | React 18, Vite, TailwindCSS, Framer Motion |
-| Backend | Node.js, Express.js |
-| Database | MongoDB (Atlas cloud) |
-| AI | Google Gemini API (`gemini-2.5-flash`) |
-| News | NewsAPI.org |
-| Scheduler | node-cron |
+| **Frontend** | React, Vite, TailwindCSS, Framer Motion, Lucide Icons |
+| **Backend** | Node.js, Express.js |
+| **Auth** | JWT (JSON Web Tokens), bcryptjs |
+| **AI** | Google Gemini API (official SDK) |
+| **Database** | MongoDB Atlas |
+| **Scheduler** | node-cron |
 
 ---
 
