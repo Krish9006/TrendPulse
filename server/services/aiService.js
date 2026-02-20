@@ -176,8 +176,9 @@ Return ONLY valid JSON, no markdown, no explanation:
     }
 
     mockAnalyzeContent(topic) {
-        const sentiments = ['Positive', 'Neutral', 'Negative', 'Bullish', 'Bearish'];
+        const sentiments = ['Positive', 'Neutral', 'Negative'];
         const randomSentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
+
 
         const insights = [
             `Market data shows a significant uptrend for ${topic} due to recent global events.`,
