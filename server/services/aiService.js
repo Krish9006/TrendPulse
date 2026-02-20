@@ -39,6 +39,18 @@ class AIService {
         }
     }
 
+    async listModels() {
+        if (!this.geminiKey) return { error: "No Gemini Key" };
+        try {
+            // Updated to use the correct listModels call
+            const result = await this.genAI.listModels();
+            return result;
+        } catch (err) {
+            return { error: err.message };
+        }
+    }
+
+
     async parseIntent(userMessage) {
         if (this.openaiKey) return this.parseIntentOpenAI(userMessage);
         if (this.geminiKey) return this.parseIntentGemini(userMessage);
