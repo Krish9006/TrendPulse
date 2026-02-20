@@ -11,6 +11,10 @@ const AnalysisResultSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    topic: {
+        type: String,
+        required: true
+    },
 
     summary: {
         type: String,

@@ -89,9 +89,10 @@ const AnalysisCard = ({ result }) => {
         <div className="bg-slate-800/40 border border-white/5 rounded-xl p-5 hover:bg-slate-800/60 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col">
-                    <span className="text-xs font-medium text-emerald-400 mb-1">{result.taskId?.topic || 'Unknown Topic'}</span>
+                    <span className="text-xs font-medium text-emerald-400 mb-1">{result.topic || result.taskId?.topic || 'Trend Insight'}</span>
                     <span className="text-xs text-gray-500">{formatDistanceToNow(new Date(result.timestamp), { addSuffix: true })}</span>
                 </div>
+
                 <SentimentBadge sentiment={result.sentiment} />
             </div>
 

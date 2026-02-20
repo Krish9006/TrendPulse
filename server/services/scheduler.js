@@ -7,7 +7,10 @@ const aiService = require('./aiService');
 const initScheduler = () => {
     console.log('🕒 Task Scheduler Initialized');
 
-    // Check for tasks every minute (in a real production app, we'd use a more robust queue)
+    // One-time cleanup: Remove orphaned analysis results where task no longer exists
+    cleanupOrphanedResults();
+
+    // Check for tasks every minute
     cron.schedule('* * * * *', async () => {
         try {
             // Find active tasks that need to run
@@ -52,11 +55,13 @@ async function processTask(task) {
         const result = new AnalysisResult({
             taskId: task._id,
             userId: task.userId,
+            topic: task.topic, // Denormalize topic name
             summary: analysis.summary,
             sentiment: analysis.sentiment,
             insight: analysis.insight,
             sourceCount: 5
         });
+
 
         await result.save();
 
@@ -70,4 +75,21 @@ async function processTask(task) {
     }
 }
 
+async function cleanupOrphanedResults() {
+    try {
+        const results = await AnalysisResult.find().populate('taskId');
+        const orphanedIds = results
+            .filter(r => !r.taskId) // taskId populated as null means task is deleted
+            .map(r => r._id);
+
+        if (orphanedIds.length > 0) {
+            console.log(`🧹 Cleaning up ${orphanedIds.length} orphaned analysis results...`);
+            await AnalysisResult.deleteMany({ _id: { $in: orphanedIds } });
+        }
+    } catch (err) {
+        console.error("Cleanup Error:", err);
+    }
+}
+
 module.exports = { initScheduler };
+

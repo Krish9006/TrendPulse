@@ -79,12 +79,17 @@ router.patch('/:id/toggle', async (req, res) => {
 // Delete Task
 router.delete('/:id', async (req, res) => {
     try {
+        // Cascade delete analysis results first
+        const AnalysisResult = require('../models/AnalysisResult');
+        await AnalysisResult.deleteMany({ taskId: req.params.id, userId: req.user.id });
+
         const task = await Task.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
         if (!task) return res.status(404).json({ message: 'Task not found' });
-        res.json({ message: 'Task deleted successfully' });
+        res.json({ message: 'Task deleted successfully. All associated insights removed.' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 module.exports = router;

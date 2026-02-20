@@ -36,11 +36,13 @@ router.post('/:taskId/run', async (req, res) => {
         const result = new AnalysisResult({
             taskId: task._id,
             userId: req.user.id,
+            topic: task.topic, // Denormalize topic name
             summary: analysis.summary,
             sentiment: analysis.sentiment,
             insight: analysis.insight,
             sourceCount: 5
         });
+
 
         await result.save();
 
