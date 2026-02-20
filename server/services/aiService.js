@@ -14,6 +14,7 @@ class AIService {
     constructor() {
         this.openaiKey = process.env.OPENAI_API_KEY;
         this.geminiKey = process.env.GEMINI_API_KEY;
+        this.lastError = null;
 
         if (this.openaiKey) {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
@@ -122,6 +123,7 @@ Return ONLY valid JSON, no markdown, no explanation:
             const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(jsonStr);
         } catch (error) {
+            this.lastError = error.message;
             console.error("Gemini Intent Error Details:", JSON.stringify(error, null, 2));
             console.error("Gemini Intent Message:", error.message);
             return this.mockParseIntent(userMessage);
@@ -144,6 +146,7 @@ Return ONLY valid JSON, no markdown, no explanation:
             const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(jsonStr);
         } catch (error) {
+            this.lastError = error.message;
             console.error("Gemini Analysis Error:", error);
             return this.mockAnalyzeContent(topic);
         }

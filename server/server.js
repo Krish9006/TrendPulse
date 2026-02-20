@@ -44,6 +44,25 @@ app.get('/api/debug/env', (req, res) => {
     });
 });
 
+const aiService = require('./services/aiService');
+
+app.get('/api/debug/test-ai', async (req, res) => {
+    try {
+        const testResult = await aiService.parseIntent("hi track test");
+        res.json({
+            status: "success",
+            result: testResult,
+            lastServiceError: aiService.lastError
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: "failed",
+            error: err.message,
+            stack: err.stack
+        });
+    }
+});
+
 
 // Import Routes
 const taskRoutes = require('./routes/tasks');
