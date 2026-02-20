@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables (NEVER commit these)
+.env
+.env.local
+.env.production
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temp/test scripts
+test-live.js
+test-clean.js
+cleanup-tasks.js
+server/cleanup-tasks.js
+C:/Users/gupta/test-clean-result.txt
+C:/Users/gupta/tasks_output.txt
