@@ -20,9 +20,9 @@ class AIService {
             console.log("✅ AI Service: Using OpenAI");
         } else if (this.geminiKey) {
             this.genAI = new GoogleGenerativeAI(this.geminiKey);
-            // User requested model that was verified to work
-            this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-            console.log("✅ AI Service: Using Google Gemini (gemini-2.5-flash)");
+            // Use gemini-1.5-flash (standard stable model)
+            this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            console.log("✅ AI Service: Using Google Gemini (gemini-1.5-flash)");
         } else {
             console.warn("⚠️ No AI API Key found (OpenAI or Gemini). Using Mock AI Service.");
         }
