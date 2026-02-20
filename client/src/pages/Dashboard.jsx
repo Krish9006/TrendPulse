@@ -27,12 +27,31 @@ const SentimentBadge = ({ sentiment }) => {
     );
 };
 
-const TaskCard = ({ task, onToggle, onDelete }) => {
+const TaskCard = ({ task, onToggle, onDelete, onRun }) => {
+    const [running, setRunning] = useState(false);
+
+    const handleRun = async () => {
+        setRunning(true);
+        await onRun(task._id);
+        setRunning(false);
+    };
+
     return (
         <div className="bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-xl p-5 hover:border-emerald-500/30 transition-colors group">
             <div className="flex justify-between items-start mb-3">
                 <h3 className="font-semibold text-lg text-white group-hover:text-emerald-400 transition-colors">{task.topic}</h3>
                 <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={handleRun}
+                        disabled={running || !task.isActive}
+                        title="Run analysis now"
+                        className={clsx(
+                            "p-1.5 rounded-lg transition-all",
+                            running ? "bg-indigo-500/20 text-indigo-400 animate-spin" : "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 disabled:opacity-30"
+                        )}
+                    >
+                        <Activity size={16} />
+                    </button>
                     <button
                         onClick={() => onToggle(task._id)}
                         title={task.isActive ? 'Pause tracker' : 'Resume tracker'}
@@ -53,7 +72,7 @@ const TaskCard = ({ task, onToggle, onDelete }) => {
             <div className="space-y-2 text-sm text-gray-400">
                 <div className="flex items-center gap-2">
                     <Clock size={14} />
-                    <span>{task.frequency === '0 * * * *' ? 'Hourly' : task.frequency === '0 9 * * *' ? 'Daily' : task.frequency}</span>
+                    <span>{task.frequency}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Activity size={14} />
@@ -67,7 +86,7 @@ const TaskCard = ({ task, onToggle, onDelete }) => {
 
 const AnalysisCard = ({ result }) => {
     return (
-        <div className="bg-slate-800/40 border border-white/5 rounded-xl p-5 hover:bg-slate-800/60 transition-colors">
+        <div className="bg-slate-800/40 border border-white/5 rounded-xl p-5 hover:bg-slate-800/60 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col">
                     <span className="text-xs font-medium text-emerald-400 mb-1">{result.taskId?.topic || 'Unknown Topic'}</span>
@@ -116,6 +135,16 @@ export default function Dashboard() {
         return () => clearInterval(interval);
     }, []);
 
+    const handleRunTask = async (id) => {
+        try {
+            await api.post(`/analysis/${id}/run`);
+            await fetchData(); // Refresh both tasks (lastRun) and insights
+        } catch (error) {
+            console.error("Run failed", error);
+            alert("Analysis failed. Please check your API keys or try again later.");
+        }
+    };
+
     const handleToggleTask = async (id) => {
         try {
             await api.patch(`/tasks/${id}/toggle`);
@@ -135,7 +164,8 @@ export default function Dashboard() {
         }
     };
 
-    if (loading) return <div className="text-emerald-400 animate-pulse">Loading dashboard...</div>;
+    if (loading) return <div className="text-emerald-400 animate-pulse p-8">Loading dashboard...</div>;
+
 
     return (
         <div className="space-y-8">
@@ -159,9 +189,16 @@ export default function Dashboard() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {tasks.map(task => (
-                            <TaskCard key={task._id} task={task} onToggle={handleToggleTask} onDelete={handleDeleteTask} />
+                            <TaskCard
+                                key={task._id}
+                                task={task}
+                                onToggle={handleToggleTask}
+                                onDelete={handleDeleteTask}
+                                onRun={handleRunTask}
+                            />
                         ))}
                     </div>
+
                 )}
             </section>
 
