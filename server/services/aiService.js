@@ -47,15 +47,15 @@ class AIService {
     async getActiveModel() {
         if (this.geminiModel) return this.geminiModel;
 
-        // Expanded list of common model names to try
+        // Exact models discovered via diagnostic tool
         const modelsToTry = [
+            "gemini-2.0-flash",
+            "gemini-flash-latest",
+            "gemini-2.5-flash",
             "gemini-1.5-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-flash-8b",
-            "gemini-1.5-pro",
-            "gemini-pro",
-            "gemini-1.0-pro"
+            "gemini-pro-latest"
         ];
+
 
         for (const modelName of modelsToTry) {
             try {
