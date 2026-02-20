@@ -20,34 +20,35 @@ class AIService {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
             console.log("✅ AI Service: Using OpenAI");
         } else if (this.geminiKey) {
-            try {
-                this.genAI = new GoogleGenerativeAI(this.geminiKey);
-                // Use gemini-1.5-pro (most stable full model name)
-                this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-                console.log(`✅ AI Service: Initialized with Google Gemini (gemini-1.5-pro).`);
-            } catch (err) {
-                console.error("❌ AI Service: Failed to initialize Gemini:", err.message);
-                this.geminiKey = null; // Fallback to mock
-            }
+            this.genAI = new GoogleGenerativeAI(this.geminiKey);
+            console.log("✅ AI Service: Gemini Base Initialized.");
         } else {
             console.warn("⚠️ AI Service: No API Key found in process.env. Using Mock AI Service.");
-            console.log("Environment check:", {
-                hasGemini: !!process.env.GEMINI_API_KEY,
-                hasOpenAI: !!process.env.OPENAI_API_KEY,
-                nodeEnv: process.env.NODE_ENV
-            });
         }
     }
 
-    async listModels() {
-        if (!this.geminiKey) return { error: "No Gemini Key" };
-        try {
-            // Updated to use the correct listModels call
-            const result = await this.genAI.listModels();
-            return result;
-        } catch (err) {
-            return { error: err.message };
+    // Helper to get a working model with fallback
+    async getActiveModel() {
+        if (this.geminiModel) return this.geminiModel;
+
+        const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
+        for (const modelName of modelsToTry) {
+            try {
+                const model = this.genAI.getGenerativeModel({ model: modelName });
+                // Do a dummy call to verify it works
+                await model.generateContent("ping");
+                this.geminiModel = model;
+                console.log(`✅ AI Service: Successfully connected using model: ${modelName}`);
+                return this.geminiModel;
+            } catch (err) {
+                console.warn(`⚠️ AI Service: Model ${modelName} failed: ${err.message}`);
+                this.lastError = `Last tried ${modelName}: ${err.message}`;
+            }
         }
+
+        console.error("❌ AI Service: All Gemini models failed. Falling back to Mock.");
+        this.geminiKey = null; // Forces mock fallback for future calls
+        return null;
     }
 
 
@@ -111,6 +112,9 @@ class AIService {
 
     async parseIntentGemini(userMessage) {
         try {
+            const model = await this.getActiveModel();
+            if (!model) return this.mockParseIntent(userMessage);
+
             const prompt = `
 You are a task-tracking assistant. Extract the tracking topic and frequency from the user's message.
 
@@ -127,7 +131,7 @@ Return ONLY valid JSON, no markdown, no explanation:
 { "topic": "string or null", "frequency": "cron_string", "confirmation": "string" }
       `;
 
-            const result = await this.geminiModel.generateContent(prompt);
+            const result = await model.generateContent(prompt);
             const response = result.response;
             const text = response.text();
 
@@ -144,6 +148,9 @@ Return ONLY valid JSON, no markdown, no explanation:
 
     async analyzeContentGemini(textData, topic) {
         try {
+            const model = await this.getActiveModel();
+            if (!model) return this.mockAnalyzeContent(topic);
+
             const prompt = `
         Analyze this news about '${topic}':
         "${textData.substring(0, 4000)}"
@@ -151,7 +158,7 @@ Return ONLY valid JSON, no markdown, no explanation:
         Return JSON ONLY: { "summary": "concise summary", "sentiment": "Positive/Neutral/Negative", "insight": "one key strategic insight" }
       `;
 
-            const result = await this.geminiModel.generateContent(prompt);
+            const result = await model.generateContent(prompt);
             const response = result.response;
             const text = response.text();
 

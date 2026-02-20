@@ -58,15 +58,12 @@ app.get('/api/debug/test-ai', async (req, res) => {
         res.status(500).json({
             status: "failed",
             error: err.message,
-            stack: err.stack
+            stack: err.stack,
+            lastServiceError: aiService.lastError
         });
     }
 });
 
-app.get('/api/debug/models', async (req, res) => {
-    const models = await aiService.listModels();
-    res.json(models);
-});
 
 
 
