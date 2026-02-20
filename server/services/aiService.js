@@ -22,9 +22,9 @@ class AIService {
         } else if (this.geminiKey) {
             try {
                 this.genAI = new GoogleGenerativeAI(this.geminiKey);
-                // Use gemini-1.5-flash with v1 stable API
-                this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: 'v1' });
-                console.log(`✅ AI Service: Using Google Gemini (gemini-1.5-flash) on v1 API.`);
+                // Switch to gemini-pro (most universally compatible alias)
+                this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+                console.log(`✅ AI Service: Initialized with Google Gemini (gemini-pro).`);
             } catch (err) {
                 console.error("❌ AI Service: Failed to initialize Gemini:", err.message);
                 this.geminiKey = null; // Fallback to mock
