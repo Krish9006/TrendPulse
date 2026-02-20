@@ -64,6 +64,12 @@ app.get('/api/debug/test-ai', async (req, res) => {
     }
 });
 
+app.get('/api/debug/models', async (req, res) => {
+    const models = await aiService.listModels();
+    res.json(models);
+});
+
+
 
 
 

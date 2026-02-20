@@ -27,22 +27,55 @@ class AIService {
         }
     }
 
+    async listModels() {
+        if (!this.geminiKey) return { error: "No Gemini Key" };
+        try {
+            // Using raw axios to bypass library limitations and see exactly what models are available
+            const axios = require('axios');
+            const response = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${this.geminiKey}`);
+            return response.data;
+        } catch (err) {
+            console.error("List Models Error:", err.response?.data || err.message);
+            return {
+                error: err.message,
+                details: err.response?.data || "No extra details"
+            };
+        }
+    }
+
     // Helper to get a working model with fallback
     async getActiveModel() {
         if (this.geminiModel) return this.geminiModel;
 
-        const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
+        // Expanded list of common model names to try
+        const modelsToTry = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-pro",
+            "gemini-pro",
+            "gemini-1.0-pro"
+        ];
+
         for (const modelName of modelsToTry) {
             try {
-                const model = this.genAI.getGenerativeModel({ model: modelName });
-                // Do a dummy call to verify it works
+                // Try v1 first, then fallback to v1beta (default)
+                const model = this.genAI.getGenerativeModel({ model: modelName }, { apiVersion: 'v1' });
+                // Do a lightweight verification call
                 await model.generateContent("ping");
                 this.geminiModel = model;
-                console.log(`✅ AI Service: Successfully connected using model: ${modelName}`);
+                console.log(`✅ AI Service: Connected using model: ${modelName} (v1)`);
                 return this.geminiModel;
             } catch (err) {
-                console.warn(`⚠️ AI Service: Model ${modelName} failed: ${err.message}`);
-                this.lastError = `Last tried ${modelName}: ${err.message}`;
+                try {
+                    const model = this.genAI.getGenerativeModel({ model: modelName }); // Default v1beta
+                    await model.generateContent("ping");
+                    this.geminiModel = model;
+                    console.log(`✅ AI Service: Connected using model: ${modelName} (v1beta)`);
+                    return this.geminiModel;
+                } catch (err2) {
+                    console.warn(`⚠️ AI Service: Model ${modelName} failed on both v1/v1beta`);
+                    this.lastError = `Last tried ${modelName}: v1:${err.message} | v1beta:${err2.message}`;
+                }
             }
         }
 
@@ -50,6 +83,7 @@ class AIService {
         this.geminiKey = null; // Forces mock fallback for future calls
         return null;
     }
+
 
 
     async parseIntent(userMessage) {
