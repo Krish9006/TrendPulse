@@ -19,12 +19,22 @@ class AIService {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
             console.log("✅ AI Service: Using OpenAI");
         } else if (this.geminiKey) {
-            this.genAI = new GoogleGenerativeAI(this.geminiKey);
-            // Use gemini-1.5-flash (standard stable model)
-            this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            console.log("✅ AI Service: Using Google Gemini (gemini-1.5-flash)");
+            try {
+                this.genAI = new GoogleGenerativeAI(this.geminiKey);
+                // Use gemini-1.5-flash (standard stable model)
+                this.geminiModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                console.log(`✅ AI Service: Using Google Gemini (gemini-1.5-flash). Key detected: ${this.geminiKey.substring(0, 5)}...`);
+            } catch (err) {
+                console.error("❌ AI Service: Failed to initialize Gemini:", err.message);
+                this.geminiKey = null; // Fallback to mock
+            }
         } else {
-            console.warn("⚠️ No AI API Key found (OpenAI or Gemini). Using Mock AI Service.");
+            console.warn("⚠️ AI Service: No API Key found in process.env. Using Mock AI Service.");
+            console.log("Environment check:", {
+                hasGemini: !!process.env.GEMINI_API_KEY,
+                hasOpenAI: !!process.env.OPENAI_API_KEY,
+                nodeEnv: process.env.NODE_ENV
+            });
         }
     }
 
@@ -144,34 +154,29 @@ Return ONLY valid JSON, no markdown, no explanation:
     mockParseIntent(message) {
         const lower = message.toLowerCase();
 
-        // Simulating AI processing delay
         return new Promise(resolve => {
             setTimeout(() => {
-                let response = {
-                    topic: null,
-                    frequency: null,
-                    confirmation: "I'm running in **Offline Mode** (AI Key issue detected). Try saying 'Track Bitcoin' to see how I work!"
-                };
+                let topic = null;
+                let confirmation = "I'm running in **Offline Mode** (AI Key issue detected). Try saying 'Track Bitcoin' to see how I work!";
 
-                if (lower.includes("track") || lower.includes("monitor") || lower.includes("watch") || lower.includes("follow")) {
-                    const words = message.split(' ');
-                    // improved extraction logic
-                    const trackIndex = words.findIndex(w => ['track', 'monitor', 'watch', 'follow'].some(k => w.toLowerCase().includes(k)));
+                const keywords = ['track', 'monitor', 'watch', 'follow', 'bitcoin', 'crypto', 'news', 'stock'];
+                const hasTopic = keywords.some(k => lower.includes(k));
 
-                    if (trackIndex !== -1 && trackIndex < words.length - 1) {
-                        let topic = words.slice(trackIndex + 1).join(" ").replace("every", "").replace("hour", "").replace("minute", "").trim();
-                        // Basic cleanup
-                        if (topic.length > 25) topic = topic.substring(0, 25) + "...";
+                if (hasTopic) {
+                    // Try to extract topic even if no "track" keyword
+                    const words = message.split(' ').filter(w => !['track', 'monitor', 'watch', 'follow', 'every', 'hour', 'minute', 'day', 'the', 'a', 'an'].includes(w.toLowerCase()));
+                    topic = words.join(" ");
+                    if (topic.length > 25) topic = topic.substring(0, 25);
 
-                        response = {
-                            topic: topic,
-                            frequency: "0 * * * *", // Default to hourly
-                            confirmation: `(Offline AI) I've set up a tracker for **${topic}**. I'll check for updates every hour.`
-                        };
-                    }
+                    confirmation = `(Offline Mode) I've set up a tracker for **${topic || 'your topic'}**. Check the dashboard for insights!`;
                 }
-                resolve(response);
-            }, 1000); // 1.5s delay for realism
+
+                resolve({
+                    topic: topic,
+                    frequency: "0 * * * *",
+                    confirmation: confirmation
+                });
+            }, 1000);
         });
     }
 
