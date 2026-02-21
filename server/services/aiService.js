@@ -15,6 +15,7 @@ class AIService {
         this.openaiKey = process.env.OPENAI_API_KEY;
         this.geminiKey = process.env.GEMINI_API_KEY;
         this.lastError = null;
+        this.isRateLimited = false;
 
         if (this.openaiKey) {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
@@ -76,14 +77,18 @@ class AIService {
                     return this.geminiModel;
                 } catch (err2) {
                     console.warn(`⚠️ AI Service: Model ${modelName} failed on both v1/v1beta`);
-                    this.lastError = `Last tried ${modelName}: v1:${err.message} | v1beta:${err2.message}`;
+                    const errMsg = `${err.message} | ${err2.message}`;
+                    this.lastError = `Last tried ${modelName}: ${errMsg}`;
+
+                    // Prioritize keeping the rate limit error info
+                    if (errMsg.includes('429') || errMsg.toLowerCase().includes('quota')) {
+                        this.isRateLimited = true;
+                    }
                 }
             }
         }
 
         console.error("❌ AI Service: All Gemini models failed. Temporarily falling back to Mock.");
-        // DO NOT nullify geminiKey here, so it can try again on the next request
-        // this.geminiKey = null; 
         return null;
     }
 
@@ -218,7 +223,7 @@ Return ONLY valid JSON, no markdown, no explanation:
                 let topic = null;
                 let confirmation = "I'm running in **Offline Mode** (AI Key issue detected).";
 
-                if (this.lastError && (this.lastError.includes('429') || this.lastError.toLowerCase().includes('quota'))) {
+                if (this.isRateLimited) {
                     confirmation = "AI is currently **Busy (Rate Limit reached)**. Using automated rules until the quota resets soon! 🕒";
                 }
 
