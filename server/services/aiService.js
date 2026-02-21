@@ -47,13 +47,12 @@ class AIService {
     async getActiveModel() {
         if (this.geminiModel) return this.geminiModel;
 
-        // Exact models discovered via diagnostic tool
+        // Models discovered to be working for this specific API Key (Step 803)
         const modelsToTry = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-pro",
             "gemini-2.0-flash",
             "gemini-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-pro",
             "gemini-pro-latest"
         ];
 
