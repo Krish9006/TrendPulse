@@ -49,12 +49,14 @@ class AIService {
 
         // Exact models discovered via diagnostic tool
         const modelsToTry = [
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-pro",
             "gemini-2.0-flash",
             "gemini-flash-latest",
-            "gemini-2.5-flash",
-            "gemini-1.5-flash",
             "gemini-pro-latest"
         ];
+
 
 
         for (const modelName of modelsToTry) {
@@ -80,8 +82,9 @@ class AIService {
             }
         }
 
-        console.error("❌ AI Service: All Gemini models failed. Falling back to Mock.");
-        this.geminiKey = null; // Forces mock fallback for future calls
+        console.error("❌ AI Service: All Gemini models failed. Temporarily falling back to Mock.");
+        // DO NOT nullify geminiKey here, so it can try again on the next request
+        // this.geminiKey = null; 
         return null;
     }
 
@@ -214,7 +217,11 @@ Return ONLY valid JSON, no markdown, no explanation:
         return new Promise(resolve => {
             setTimeout(() => {
                 let topic = null;
-                let confirmation = "I'm running in **Offline Mode** (AI Key issue detected). Try saying 'Track Bitcoin' to see how I work!";
+                let confirmation = "I'm running in **Offline Mode** (AI Key issue detected).";
+
+                if (this.lastError && (this.lastError.includes('429') || this.lastError.toLowerCase().includes('quota'))) {
+                    confirmation = "AI is currently **Busy (Rate Limit reached)**. Using automated rules until the quota resets soon! 🕒";
+                }
 
                 const keywords = ['track', 'monitor', 'watch', 'follow', 'bitcoin', 'crypto', 'news', 'stock'];
                 const hasTopic = keywords.some(k => lower.includes(k));
