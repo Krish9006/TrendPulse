@@ -166,16 +166,25 @@ class AIService {
                 messages: [
                     {
                         role: "system",
-                        content: `You are a helpful assistant that helps users configure trend tracking tasks. 
-            Extract the 'topic' and 'frequency' (in cron format, default to '0 * * * *' for hourly) from the user's message.
-            Return ONLY a valid JSON object: { "topic": "string", "frequency": "cron_string", "confirmation": "string" }.
-            If the request is not about a task, return { "topic": null, "confirmation": "I can help you track trends. Try saying 'Track Bitcoin every hour'." }`
+                        content: `You are a helpful assistant configuring trend tracking. 
+            Extract 'topic' and 'frequency' (cron format, default '0 * * * *') from user messages.
+            Return exactly JSON: { "topic": "string", "frequency": "string", "confirmation": "string" }.
+            If not a tracked task (e.g., small talk, names without intent), return { "topic": null, "confirmation": "I track trends. E.g., 'Track Virat Kohli news'." }
+            NEVER return a boolean for confirmation, it MUST be string.`
                     },
                     { role: "user", content: userMessage }
                 ],
-                response_format: { type: "json_object" }
+                response_format: { type: "json_object" },
+                temperature: 0.2
             });
-            return JSON.parse(completion.choices[0].message.content);
+            let result = JSON.parse(completion.choices[0].message.content);
+            if (typeof result.confirmation === 'boolean') {
+                result.confirmation = result.confirmation ? `I've set up tracking for ${result.topic}.` : "I didn't quite get that. What should I track?";
+            }
+            if (!result.confirmation) {
+                result.confirmation = "Got it! Tracking is setup.";
+            }
+            return result;
         } catch (error) {
             console.error("Groq Intent Error:", error);
             return this.mockParseIntent(userMessage);
@@ -275,11 +284,7 @@ Return ONLY valid JSON, no markdown, no explanation:
         return new Promise(resolve => {
             setTimeout(() => {
                 let topic = null;
-                let confirmation = "I'm running in **Offline Mode** (AI Key issue detected).";
-
-                if (this.isRateLimited) {
-                    confirmation = "AI is currently **Busy (Rate Limit reached)**. Using automated rules until the quota resets soon! 🕒";
-                }
+                let confirmation = "It looks like the AI service timed out briefly. Could you try saying that again?";
 
                 const keywords = ['track', 'monitor', 'watch', 'follow', 'bitcoin', 'crypto', 'news', 'stock'];
                 const hasTopic = keywords.some(k => lower.includes(k));
