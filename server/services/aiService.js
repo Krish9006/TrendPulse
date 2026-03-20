@@ -169,7 +169,8 @@ class AIService {
                         content: `You are a helpful assistant configuring trend tracking. 
             Extract 'topic' and 'frequency' (cron format, default '0 * * * *') from user messages.
             Return exactly JSON: { "topic": "string", "frequency": "string", "confirmation": "string" }.
-            If not a tracked task (e.g., small talk, names without intent), return { "topic": null, "confirmation": "I track trends. E.g., 'Track Virat Kohli news'." }
+            If the user types a noun, single word, or entity (e.g., "bitcoin", "MS Dhoni", "AI"), ASSUME they want to track it and extract it as the topic.
+            ONLY reject true conversational greetings like "hi" or "hello" or nonsense. If rejected, return { "topic": null, "confirmation": "I can track trends. E.g., 'Track Virat Kohli news'." }.
             NEVER return a boolean for confirmation, it MUST be string.`
                     },
                     { role: "user", content: userMessage }
