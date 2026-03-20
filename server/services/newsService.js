@@ -11,35 +11,26 @@ const MOCK_NEWS = [
 
 class NewsService {
     constructor() {
-        this.apiKey = process.env.NEWS_API_KEY;
-        if (!this.apiKey) {
-            console.warn("⚠️ No NEWS_API_KEY found. Using Mock News Service.");
-        }
+        console.log("✅ News Service: Initialized (Using Google News RSS)");
     }
 
     async fetchNews(topic) {
-        if (!this.apiKey) {
-            return this.mockFetchNews(topic);
-        }
-
         try {
-            const response = await axios.get(`https://newsapi.org/v2/everything`, {
-                params: {
-                    q: topic,
-                    apiKey: this.apiKey,
-                    language: 'en',
-                    sortBy: 'publishedAt',
-                    pageSize: 5
-                }
-            });
-
-            if (response.data.articles && response.data.articles.length > 0) {
-                return response.data.articles.map(a => `${a.title}. ${a.description}`).join(" ");
+            const Parser = require('rss-parser');
+            const parser = new Parser();
+            
+            // Format google news search url safely
+            const query = encodeURIComponent(topic);
+            const feed = await parser.parseURL(`https://news.google.com/rss/search?q=${query}&hl=en-US&gl=US&ceid=US:en`);
+            
+            if (feed.items && feed.items.length > 0) {
+                const topItems = feed.items.slice(0, 8); // Send up to 8 top news snippets to Llama-3 
+                return topItems.map(a => `${a.title}.`).join(" ");
             } else {
                 return `No recent news found for ${topic}.`;
             }
         } catch (error) {
-            console.error("NewsAPI Error:", error.message);
+            console.error("Google News RSS Error:", error.message);
             return this.mockFetchNews(topic);
         }
     }
