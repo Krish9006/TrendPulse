@@ -67,13 +67,12 @@ async function processTask(task) {
             console.warn(`⚠️ Skipped saving result for task ${task.topic} because it has no userId.`);
         }
 
-        // 4. Update Task
-        task.lastRun = new Date();
-        await task.save();
+        // 4. Update Task using updateOne to bypass full mongoose validation on orphaned tasks
+        await Task.updateOne({ _id: task._id }, { $set: { lastRun: new Date() } });
 
         console.log(`✅ Completed Task: ${task.topic}`);
     } catch (error) {
-        console.error(`❌ Failed Task ${task.topic}:`, error);
+        console.error(`❌ Failed Task ${task.topic}:`, error.message || error);
     }
 }
 
