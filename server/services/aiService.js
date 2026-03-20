@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 require('dotenv').config();
 
 // Mock Data for fallback
@@ -14,10 +15,14 @@ class AIService {
     constructor() {
         this.openaiKey = process.env.OPENAI_API_KEY;
         this.geminiKey = process.env.GEMINI_API_KEY;
+        this.groqKey = process.env.GROQ_API_KEY;
         this.lastError = null;
         this.isRateLimited = false;
 
-        if (this.openaiKey) {
+        if (this.groqKey) {
+            this.groq = new Groq({ apiKey: this.groqKey });
+            console.log("✅ AI Service: Using Groq");
+        } else if (this.openaiKey) {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
             console.log("✅ AI Service: Using OpenAI");
         } else if (this.geminiKey) {
@@ -95,12 +100,14 @@ class AIService {
 
 
     async parseIntent(userMessage) {
+        if (this.groqKey) return this.parseIntentGroq(userMessage);
         if (this.openaiKey) return this.parseIntentOpenAI(userMessage);
         if (this.geminiKey) return this.parseIntentGemini(userMessage);
         return this.mockParseIntent(userMessage);
     }
 
     async analyzeContent(textData, topic) {
+        if (this.groqKey) return this.analyzeContentGroq(textData, topic);
         if (this.openaiKey) return this.analyzeContentOpenAI(textData, topic);
         if (this.geminiKey) return this.analyzeContentGemini(textData, topic);
         return this.mockAnalyzeContent(topic);
@@ -146,6 +153,53 @@ class AIService {
             return JSON.parse(response.choices[0].message.content);
         } catch (error) {
             console.error("OpenAI Analysis Error:", error);
+            return this.mockAnalyzeContent(topic);
+        }
+    }
+
+    // --- Groq Methods ---
+
+    async parseIntentGroq(userMessage) {
+        try {
+            const completion = await this.groq.chat.completions.create({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are a helpful assistant that helps users configure trend tracking tasks. 
+            Extract the 'topic' and 'frequency' (in cron format, default to '0 * * * *' for hourly) from the user's message.
+            Return ONLY a valid JSON object: { "topic": "string", "frequency": "cron_string", "confirmation": "string" }.
+            If the request is not about a task, return { "topic": null, "confirmation": "I can help you track trends. Try saying 'Track Bitcoin every hour'." }`
+                    },
+                    { role: "user", content: userMessage }
+                ],
+                response_format: { type: "json_object" }
+            });
+            return JSON.parse(completion.choices[0].message.content);
+        } catch (error) {
+            console.error("Groq Intent Error:", error);
+            return this.mockParseIntent(userMessage);
+        }
+    }
+
+    async analyzeContentGroq(textData, topic) {
+        try {
+            const completion = await this.groq.chat.completions.create({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Analyze the provided news text about '${topic}'. 
+            Return a JSON object: { "summary": "concise summary", "sentiment": "Positive/Neutral/Negative", "insight": "one key strategic insight" }.
+            Output nothing else but JSON.`
+                    },
+                    { role: "user", content: textData.substring(0, 2000) }
+                ],
+                response_format: { type: "json_object" }
+            });
+            return JSON.parse(completion.choices[0].message.content);
+        } catch (error) {
+            console.error("Groq Analysis Error:", error);
             return this.mockAnalyzeContent(topic);
         }
     }

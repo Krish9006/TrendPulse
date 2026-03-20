@@ -9,10 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        process.env.CLIENT_URL, // Set this to your Vercel URL on Render
-    ].filter(Boolean),
+    origin: true,
     credentials: true
 }));
 app.use(express.json());
@@ -34,6 +31,8 @@ app.get('/', (req, res) => {
 // Diagnostic route for Render config (Securely check if keys exist)
 app.get('/api/debug/env', (req, res) => {
     res.json({
+        groq: !!process.env.GROQ_API_KEY,
+        groqPrefix: process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.substring(0, 5) : null,
         gemini: !!process.env.GEMINI_API_KEY,
         geminiPrefix: process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.substring(0, 5) : null,
         news: !!process.env.NEWS_API_KEY,
