@@ -51,19 +51,21 @@ async function processTask(task) {
         // 2. Analyze
         const analysis = await aiService.analyzeContent(newsContent, task.topic);
 
-        // 3. Save Result
-        const result = new AnalysisResult({
-            taskId: task._id,
-            userId: task.userId,
-            topic: task.topic, // Denormalize topic name
-            summary: analysis.summary,
-            sentiment: analysis.sentiment,
-            insight: analysis.insight,
-            sourceCount: 5
-        });
-
-
-        await result.save();
+        // 3. Save Result (Only if userId exists, to prevent ValidationError on legacy tasks without userId)
+        if (task.userId) {
+            const result = new AnalysisResult({
+                taskId: task._id,
+                userId: task.userId,
+                topic: task.topic, // Denormalize topic name
+                summary: analysis.summary,
+                sentiment: analysis.sentiment,
+                insight: analysis.insight,
+                sourceCount: 5
+            });
+            await result.save();
+        } else {
+            console.warn(`⚠️ Skipped saving result for task ${task.topic} because it has no userId.`);
+        }
 
         // 4. Update Task
         task.lastRun = new Date();
