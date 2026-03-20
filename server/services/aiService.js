@@ -162,7 +162,7 @@ class AIService {
     async parseIntentGroq(userMessage) {
         try {
             const completion = await this.groq.chat.completions.create({
-                model: "llama-3.3-70b-versatile",
+                model: "llama-3.1-8b-instant",
                 messages: [
                     {
                         role: "system",
@@ -194,7 +194,7 @@ class AIService {
     async analyzeContentGroq(textData, topic) {
         try {
             const completion = await this.groq.chat.completions.create({
-                model: "llama-3.3-70b-versatile",
+                model: "llama-3.1-8b-instant",
                 messages: [
                     {
                         role: "system",
