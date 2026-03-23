@@ -173,8 +173,8 @@ export default function Dashboard() {
 
             {/* Header */}
             <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
-                <p className="text-gray-400">Overview of your active trackers and latest insights.</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Dashboard</h2>
+                <p className="text-sm md:text-base text-gray-400">Overview of your active trackers and latest insights.</p>
             </div>
 
             {/* Active Tasks Grid */}

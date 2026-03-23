@@ -81,8 +81,8 @@ export default function Chat() {
     };
 
     return (
-        <div className="h-[calc(100vh-8rem)] flex flex-col max-w-3xl mx-auto">
-            <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+        <div className="flex flex-col h-[calc(100vh-73px-2rem)] md:h-[calc(100vh-4rem)] max-w-3xl mx-auto">
+            <div className="flex-1 overflow-y-auto pr-2 sm:pr-4 custom-scrollbar">
                 {messages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
                 {loading && (
                     <div className="flex gap-4 mb-6">
@@ -99,20 +99,20 @@ export default function Chat() {
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="mt-4 relative">
+            <form onSubmit={handleSend} className="mt-2 md:mt-4 flex-shrink-0 relative">
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Ask me to track a topic..."
-                    className="w-full bg-slate-800 border-none rounded-xl py-4 pl-6 pr-14 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500/50 shadow-lg"
+                    className="w-full bg-slate-800 border border-white/5 rounded-xl py-3 md:py-4 pl-4 md:pl-6 pr-12 md:pr-14 text-sm md:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-lg"
                 />
                 <button
                     type="submit"
                     disabled={loading || !input.trim()}
-                    className="absolute right-2 top-2 p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute right-1.5 md:right-2 top-1.5 md:top-2 p-1.5 md:p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Send size={20} />
+                    <Send size={18} className="md:w-5 md:h-5" />
                 </button>
             </form>
         </div>
