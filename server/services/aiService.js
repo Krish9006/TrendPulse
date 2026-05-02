@@ -19,12 +19,12 @@ class AIService {
         this.lastError = null;
         this.isRateLimited = false;
 
-        if (this.geminiKey) {
-            this.genAI = new GoogleGenerativeAI(this.geminiKey);
-            console.log("✅ AI Service: Gemini Base Initialized.");
-        } else if (this.groqKey) {
+        if (this.groqKey) {
             this.groq = new Groq({ apiKey: this.groqKey });
             console.log("✅ AI Service: Using Groq");
+        } else if (this.geminiKey) {
+            this.genAI = new GoogleGenerativeAI(this.geminiKey);
+            console.log("✅ AI Service: Gemini Base Initialized.");
         } else if (this.openaiKey) {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
             console.log("✅ AI Service: Using OpenAI");
@@ -178,7 +178,9 @@ class AIService {
                 response_format: { type: "json_object" },
                 temperature: 0.2
             });
-            let result = JSON.parse(completion.choices[0].message.content);
+            const content = completion.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            const result = JSON.parse(jsonMatch ? jsonMatch[0] : content);
             if (typeof result.confirmation === 'boolean') {
                 result.confirmation = result.confirmation ? `I've set up tracking for ${result.topic}.` : "I didn't quite get that. What should I track?";
             }
@@ -195,7 +197,7 @@ class AIService {
     async analyzeContentGroq(textData, topic) {
         try {
             const completion = await this.groq.chat.completions.create({
-                model: "llama-3.1-8b-instant",
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     {
                         role: "system",
@@ -213,7 +215,9 @@ class AIService {
                 ],
                 response_format: { type: "json_object" }
             });
-            return JSON.parse(completion.choices[0].message.content);
+            const content = completion.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            return JSON.parse(jsonMatch ? jsonMatch[0] : content);
         } catch (error) {
             console.error("Groq Analysis Error:", error);
             return this.mockAnalyzeContent(topic);
