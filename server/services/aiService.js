@@ -19,15 +19,15 @@ class AIService {
         this.lastError = null;
         this.isRateLimited = false;
 
-        if (this.groqKey) {
+        if (this.geminiKey) {
+            this.genAI = new GoogleGenerativeAI(this.geminiKey);
+            console.log("✅ AI Service: Gemini Base Initialized.");
+        } else if (this.groqKey) {
             this.groq = new Groq({ apiKey: this.groqKey });
             console.log("✅ AI Service: Using Groq");
         } else if (this.openaiKey) {
             this.openai = new OpenAI({ apiKey: this.openaiKey });
             console.log("✅ AI Service: Using OpenAI");
-        } else if (this.geminiKey) {
-            this.genAI = new GoogleGenerativeAI(this.geminiKey);
-            console.log("✅ AI Service: Gemini Base Initialized.");
         } else {
             console.warn("⚠️ AI Service: No API Key found in process.env. Using Mock AI Service.");
         }

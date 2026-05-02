@@ -55,8 +55,8 @@ class EmailService {
             return;
         }
 
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-        const verifyUrl = `${clientUrl}/verify/${token}`;
+        const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+        const verifyUrl = `${serverUrl}/api/auth/verify/${token}`;
         
         let htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
