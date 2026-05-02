@@ -1,6 +1,6 @@
 const axios = require('axios');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config();
 
 const MOCK_NEWS = [
     "Market data shows a significant uptrend due to recent global events.",
