@@ -267,7 +267,12 @@ Return ONLY valid JSON, no markdown, no explanation:
         Analyze this news about '${topic}':
         "${textData.substring(0, 4000)}"
         
-        Return JSON ONLY: { "summary": "concise summary", "sentiment": "Positive/Neutral/Negative", "insight": "one key strategic insight" }
+        Return JSON ONLY: { 
+            "summary": "concise summary", 
+            "sentiment": "Positive/Neutral/Negative", 
+            "insight": "one key strategic insight",
+            "metrics": [ {"label": "Volume", "value": 75}, {"label": "Momentum", "value": 45} ] 
+        }
       `;
 
             const result = await model.generateContent(prompt);
@@ -330,7 +335,12 @@ Return ONLY valid JSON, no markdown, no explanation:
                 resolve({
                     summary: `Recent analyst reports regarding **${topic}** highlight increased activity and interest. Key market indicators suggest a potential shift in momentum.`,
                     sentiment: randomSentiment,
-                    insight: randomInsight
+                    insight: randomInsight,
+                    metrics: [
+                        { label: 'Market Sentiment', value: Math.floor(Math.random() * 40) + 60 },
+                        { label: 'Social Buzz', value: Math.floor(Math.random() * 30) + 40 },
+                        { label: 'Media Coverage', value: Math.floor(Math.random() * 50) + 20 }
+                    ]
                 });
             }, 1500); // 1.5s delay for realism
         });

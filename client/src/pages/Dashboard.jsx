@@ -73,7 +73,7 @@ const TaskCard = ({ task, onToggle, onDelete, onRun }) => {
             <div className="space-y-2 text-sm text-zinc-500">
                 <div className="flex items-center gap-2">
                     <Clock size={14} />
-                    <span>{task.frequency}</span>
+                    <span>{task.frequency === '0 * * * *' ? 'Hourly Updates' : task.frequency}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Activity size={14} />
@@ -166,7 +166,8 @@ const CreateTracker = ({ onTaskAdded }) => {
             onTaskAdded();
         } catch (error) {
             console.error(error);
-            alert('Failed to add tracker');
+            const message = error.response?.data?.message || 'Failed to add tracker';
+            alert(message);
         } finally {
             setLoading(false);
         }
