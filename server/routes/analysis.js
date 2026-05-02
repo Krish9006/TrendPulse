@@ -40,7 +40,9 @@ router.post('/:taskId/run', async (req, res) => {
             summary: analysis.summary,
             sentiment: analysis.sentiment,
             insight: analysis.insight,
-            sourceCount: 5
+            metrics: analysis.metrics || [],
+            sources: analysis.sources || [],
+            sourceCount: analysis.sources ? analysis.sources.length : 5
         });
 
 

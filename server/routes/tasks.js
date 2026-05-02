@@ -39,6 +39,17 @@ router.post('/chat', async (req, res) => {
                 });
             }
 
+            // Plan limits check
+            const user = await require('../models/User').findById(req.user.id);
+            const taskCount = await Task.countDocuments({ userId: req.user.id });
+            
+            if (user && user.plan === 'free' && taskCount >= 2) {
+                return res.status(403).json({
+                    message: "Free plan is limited to 2 trackers. Please upgrade to Pro.",
+                    action: 'UPGRADE_REQUIRED'
+                });
+            }
+
             const newTask = new Task({
                 userId: req.user.id,
                 topic: aiResponse.topic,

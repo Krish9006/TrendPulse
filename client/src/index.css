@@ -1,17 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #10B981; /* Emerald-500 */
-  --color-secondary: #8B5CF6; /* Violet-500 */
-  --color-dark-bg: #0F172A; /* Slate-900 */
-  --color-card-bg: #1E293B; /* Slate-800 */
-}
-
-/* Custom Utilities if needed */
-.glass-panel {
-  @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl;
+  --color-primary: #6366F1; /* Indigo-500 */
+  --color-dark-bg: #0A0A0A;
+  --color-card-bg: #0F0F11;
+  --color-border-subtle: #27272A;
 }
 
 body {
-  @apply bg-gray-950 text-white min-h-screen font-sans antialiased;
+  @apply text-zinc-900 min-h-screen antialiased selection:bg-blue-500/20;
+  background-color: #f4f4f5; /* Zinc 100 */
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }

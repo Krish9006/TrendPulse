@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import Chat from './pages/Chat';
+import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -31,9 +31,9 @@ function AppRoutes() {
                     <Layout><Dashboard /></Layout>
                 </PrivateRoute>
             } />
-            <Route path="/chat" element={
+            <Route path="/pricing" element={
                 <PrivateRoute>
-                    <Layout><Chat /></Layout>
+                    <Layout><Pricing /></Layout>
                 </PrivateRoute>
             } />
             <Route path="*" element={<Navigate to="/" replace />} />

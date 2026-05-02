@@ -7,6 +7,7 @@ import { Activity, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 export default function Signup() {
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
     const { login } = useAuth();
@@ -23,8 +24,8 @@ export default function Signup() {
         setLoading(true);
         try {
             const res = await api.post('/auth/register', form);
-            login(res.data.user, res.data.token);
-            navigate('/');
+            setSuccess(res.data.message);
+            setForm({ name: '', email: '', password: '' });
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally {
@@ -110,10 +111,15 @@ export default function Signup() {
                             </div>
                         </div>
 
-                        {/* Error */}
+                        {/* Error & Success */}
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 text-red-400 text-sm">
                                 {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3 text-emerald-400 text-sm text-center">
+                                {success}
                             </div>
                         )}
 

@@ -29,13 +29,17 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ message: 'Email already registered. Please log in.' });
         }
 
-        const user = await User.create({ name, email, password });
-        const token = generateToken(user);
+        const crypto = require('crypto');
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        
+        const user = await User.create({ name, email, password, verificationToken });
+        
+        const emailService = require('../services/emailService');
+        await emailService.sendVerificationEmail(user.email, user.name, verificationToken);
 
         res.status(201).json({
-            message: 'Account created successfully!',
-            token,
-            user: { id: user._id, name: user.name, email: user.email }
+            message: 'Account created successfully! Please check your email to verify your account.',
+            requiresVerification: true
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -61,6 +65,10 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password.' });
         }
 
+        if (!user.isVerified) {
+            return res.status(403).json({ message: 'Please verify your email before logging in. Check your inbox.' });
+        }
+
         const token = generateToken(user);
 
         res.json({
@@ -81,6 +89,24 @@ router.get('/me', require('../middleware/auth'), async (req, res) => {
         res.json(user);
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/auth/verify/:token
+router.get('/verify/:token', async (req, res) => {
+    try {
+        const user = await User.findOne({ verificationToken: req.params.token });
+        if (!user) {
+            return res.status(400).send('Invalid or expired verification token.');
+        }
+
+        user.isVerified = true;
+        user.verificationToken = undefined;
+        await user.save();
+
+        res.redirect('http://localhost:5173/login?verified=true');
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 });
 

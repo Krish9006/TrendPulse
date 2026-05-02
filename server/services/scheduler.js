@@ -51,7 +51,7 @@ async function processTask(task) {
         // 2. Analyze
         const analysis = await aiService.analyzeContent(newsContent, task.topic);
 
-        // 3. Save Result (Only if userId exists, to prevent ValidationError on legacy tasks without userId)
+        // 3. Save Result
         if (task.userId) {
             const result = new AnalysisResult({
                 taskId: task._id,
@@ -60,9 +60,25 @@ async function processTask(task) {
                 summary: analysis.summary,
                 sentiment: analysis.sentiment,
                 insight: analysis.insight,
-                sourceCount: 5
+                metrics: analysis.metrics || [],
+                sources: analysis.sources || [],
+                sourceCount: analysis.sources ? analysis.sources.length : 5
             });
             await result.save();
+
+            // 🌟 END-TO-END PRODUCT FEATURE: Send Automated Email to PRO Users
+            try {
+                const User = require('../models/User');
+                const emailService = require('./emailService');
+                const user = await User.findById(task.userId);
+                
+                if (user && user.plan === 'pro') {
+                    await emailService.sendDailyReport(user.email, user.name, [result]);
+                }
+            } catch (emailErr) {
+                console.error("Email Sending Error:", emailErr);
+            }
+
         } else {
             console.warn(`⚠️ Skipped saving result for task ${task.topic} because it has no userId.`);
         }

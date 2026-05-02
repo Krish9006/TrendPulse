@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { Activity, Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -9,8 +9,16 @@ export default function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
+    const [success, setSuccess] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('verified') === 'true') {
+            setSuccess('Email verified successfully! You can now sign in.');
+        }
+    }, [searchParams]);
 
     const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -90,10 +98,15 @@ export default function Login() {
                             </div>
                         </div>
 
-                        {/* Error */}
+                        {/* Error & Success */}
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 text-red-400 text-sm">
                                 {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3 text-emerald-400 text-sm text-center">
+                                {success}
                             </div>
                         )}
 

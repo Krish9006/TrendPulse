@@ -19,6 +19,18 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 6
     },
+    plan: {
+        type: String,
+        enum: ['free', 'pro'],
+        default: 'free'
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -28,6 +28,14 @@ const AnalysisResultSchema = new mongoose.Schema({
     insight: {
         type: String
     },
+    metrics: [{
+        label: String,
+        value: Number
+    }],
+    sources: [{
+        publisher: String,
+        url: String
+    }],
     sourceCount: {
         type: Number,
         default: 0

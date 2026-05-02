@@ -199,11 +199,17 @@ class AIService {
                 messages: [
                     {
                         role: "system",
-                        content: `Analyze the provided news text about '${topic}'. 
-            Return a JSON object: { "summary": "concise summary", "sentiment": "Positive/Neutral/Negative", "insight": "one key strategic insight" }.
-            Output nothing else but JSON.`
+                        content: `Analyze the provided real-time news about '${topic}'. 
+            You must return ONLY a JSON object with this exact structure:
+            {
+              "summary": "concise executive summary",
+              "sentiment": "Positive/Neutral/Negative",
+              "insight": "one key strategic insight",
+              "metrics": [ {"label": "Growth Rate", "value": 15} ], // Extract 2-4 numerical metrics or percentages. If none, infer reasonable dummy data.
+              "sources": [ {"publisher": "NewsName", "url": "http..."} ] // Extract publisher and URL from the text
+            }`
                     },
-                    { role: "user", content: textData.substring(0, 2000) }
+                    { role: "user", content: textData.substring(0, 4000) }
                 ],
                 response_format: { type: "json_object" }
             });
@@ -312,13 +318,10 @@ Return ONLY valid JSON, no markdown, no explanation:
         const sentiments = ['Positive', 'Neutral', 'Negative'];
         const randomSentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
 
-
         const insights = [
             `Market data shows a significant uptrend for ${topic} due to recent global events.`,
             `Public sentiment around ${topic} is mixed, with rising concerns over regulatory changes.`,
-            `The technology sector is rallying behind new advancements in ${topic}.`,
-            `Supply chain disruptions are causing minor delays, impacting ${topic} availability.`,
-            `Analysts predict a volatile week for ${topic} as earnings reports approach.`
+            `The technology sector is rallying behind new advancements in ${topic}.`
         ];
         const randomInsight = insights[Math.floor(Math.random() * insights.length)];
 

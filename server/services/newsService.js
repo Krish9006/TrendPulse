@@ -11,33 +11,39 @@ const MOCK_NEWS = [
 
 class NewsService {
     constructor() {
-        console.log("✅ News Service: Initialized (Using Google News RSS)");
+        console.log("✅ News Service: Initialized (Using NewsData.io API)");
+        this.apiKey = process.env.NEWS_API_KEY;
     }
 
     async fetchNews(topic) {
         try {
-            const Parser = require('rss-parser');
-            const parser = new Parser();
+            if (!this.apiKey) {
+                console.warn("⚠️ No NEWS_API_KEY found. Falling back to mock.");
+                return this.mockFetchNews(topic);
+            }
             
-            // Format google news search url safely
             const query = encodeURIComponent(topic);
-            const feed = await parser.parseURL(`https://news.google.com/rss/search?q=${query}&hl=en-US&gl=US&ceid=US:en`);
+            // Fetch live news from NewsData.io
+            const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${this.apiKey}&q=${query}&language=en`);
             
-            if (feed.items && feed.items.length > 0) {
-                const topItems = feed.items.slice(0, 8); // Send up to 8 top news snippets to Llama-3 
-                return topItems.map(a => `${a.title}.`).join(" ");
+            const articles = response.data.results;
+            
+            if (articles && articles.length > 0) {
+                const topItems = articles.slice(0, 5); 
+                // Return context WITH Source Name and URL so AI can extract it
+                return topItems.map(a => `Title: ${a.title}\nDesc: ${a.description || a.content}\nSource: ${a.source_id}\nURL: ${a.link}`).join("\n\n---\n\n");
             } else {
                 return `No recent news found for ${topic}.`;
             }
         } catch (error) {
-            console.error("Google News RSS Error:", error.message);
+            console.error("NewsData.io API Error:", error.response?.data || error.message);
             return this.mockFetchNews(topic);
         }
     }
 
     mockFetchNews(topic) {
         return Promise.resolve(
-            `Latest sample news for ${topic}: ` + MOCK_NEWS.join(" ")
+            `Latest sample news for ${topic}:\n` + MOCK_NEWS.join("\n")
         );
     }
 }
