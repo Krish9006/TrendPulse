@@ -55,11 +55,11 @@ class AIService {
 
         // Models discovered to be working for this specific API Key (Step 803)
         const modelsToTry = [
+            "gemini-2.5-flash",
             "gemini-2.0-flash",
-            "gemini-flash-latest",
             "gemini-1.5-flash",
-            "gemini-pro",
-            "gemini-pro-latest"
+            "gemini-flash-latest",
+            "gemini-pro"
         ];
 
 
