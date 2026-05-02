@@ -104,7 +104,8 @@ router.get('/verify/:token', async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        res.redirect('http://localhost:5173/login?verified=true');
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${clientUrl}/login?verified=true`);
     } catch (err) {
         res.status(500).send(err.message);
     }
