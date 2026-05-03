@@ -9,29 +9,26 @@ module.exports = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'No token provided. Please log in.' });
+            return res.status(401).json({ message: 'No token provided.' });
         }
 
         const token = authHeader.split(' ')[1];
         
         try {
-            // Robust verification using authenticateRequest
-            const request = new Request(req.protocol + '://' + req.get('host') + req.originalUrl, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const { isSignedIn, toAuth } = await clerkClient.authenticateRequest(request);
+            // Use verifyToken directly for maximum compatibility
+            const decoded = await clerkClient.verifyToken(token);
             
-            if (!isSignedIn) {
-                return res.status(401).json({ message: 'Auth failed: Session not active.' });
+            if (!decoded) {
+                console.error('Clerk Verify: Decoded token is null');
+                return res.status(401).json({ message: 'Auth failed: Invalid token.' });
             }
 
-            const auth = toAuth();
-            req.user = { id: auth.userId };
-            
+            req.user = { id: decoded.sub };
             next();
         } catch (verifyError) {
-            console.error('Clerk Auth Error:', verifyError.message);
+            console.error('Clerk Verify Error:', verifyError.message);
+            
+            // If verification fails, try a fallback check or provide a clearer error
             return res.status(401).json({ message: 'Auth failed: ' + verifyError.message });
         }
     } catch (err) {
