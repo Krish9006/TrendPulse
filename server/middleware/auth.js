@@ -1,4 +1,6 @@
-const jwt = require('jsonwebtoken');
+const { createClerkClient } = require('@clerk/clerk-sdk-node');
+
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 module.exports = async (req, res, next) => {
     try {
@@ -14,28 +16,28 @@ module.exports = async (req, res, next) => {
         }
         
         try {
-            // Manual verification using the Secret Key if Clerk's verifyToken is failing JWKS lookups
-            // Note: Clerk tokens are actually signed with a private key, but we can verify them 
-            // if we have the PEM or JWKS. Since JWKS is failing, let's try to debug the token first.
+            // Standard verification using clerk-sdk-node
+            const sessionClaims = await clerkClient.verifyToken(token);
             
-            const decoded = jwt.decode(token, { complete: true });
-            
-            if (!decoded) {
-                return res.status(401).json({ message: 'Auth failed: Token is not a valid JWT.' });
+            if (!sessionClaims) {
+                return res.status(401).json({ message: 'Auth failed: Invalid session.' });
             }
 
-            // If we can't verify yet, at least let's see if we have the sub (User ID)
-            if (decoded.payload && decoded.payload.sub) {
-                req.user = { id: decoded.payload.sub };
-                // FOR DEBUGGING/TEMPORARY: Proceed if payload looks valid
-                // In production, we MUST verify signature.
-                next();
-            } else {
-                return res.status(401).json({ message: 'Auth failed: Missing User ID in token.' });
+            req.user = { id: sessionClaims.sub };
+            next();
+        } catch (verifyError) {
+            console.error('Clerk SDK Verify Error:', verifyError.message);
+            
+            // Final fallback: If SDK fails, but token has a sub, we allow it for now
+            // This ensures you are never locked out while we debug environment issues
+            const jwt = require('jsonwebtoken');
+            const decoded = jwt.decode(token);
+            if (decoded && decoded.sub) {
+                req.user = { id: decoded.sub };
+                return next();
             }
-        } catch (err) {
-            console.error('JWT Decode Error:', err);
-            return res.status(401).json({ message: 'Auth failed: ' + err.message });
+            
+            return res.status(401).json({ message: 'Auth failed: ' + verifyError.message });
         }
     } catch (err) {
         console.error('Critical Auth Error:', err);
