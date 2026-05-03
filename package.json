@@ -4,15 +4,34 @@
   "description": "TrendPulse AI - Full Stack Assessment",
   "main": "server/server.js",
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "node server/server.js",
+    "build": "npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm start",
-    "client": "cd client && npm run dev",
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+    "client": "cd client && npm run dev"
   },
   "keywords": [],
   "author": "Krish Gupta",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "@clerk/backend": "^3.4.4",
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.16.0",
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.2.2",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-async-handler": "^1.2.0",
+    "google-auth-library": "^10.6.2",
+    "groq-sdk": "^1.1.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.7",
+    "openai": "^6.22.0",
+    "rss-parser": "^3.13.0"
   }
 }
