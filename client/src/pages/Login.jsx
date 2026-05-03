@@ -33,6 +33,7 @@ export default function Login() {
                 routing="path" 
                 path="/login" 
                 signUpUrl="/signup"
+                afterSignInUrl="/"
             />
         </div>
     );

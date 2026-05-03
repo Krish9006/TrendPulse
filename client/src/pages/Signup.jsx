@@ -31,6 +31,7 @@ export default function Signup() {
                 routing="path" 
                 path="/signup" 
                 signInUrl="/login"
+                afterSignUpUrl="/"
             />
         </div>
     );
