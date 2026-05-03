@@ -1,6 +1,9 @@
 const { createClerkClient } = require('@clerk/backend');
 
-const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const clerkClient = createClerkClient({ 
+    secretKey: process.env.CLERK_SECRET_KEY,
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY
+});
 
 module.exports = async (req, res, next) => {
     try {
@@ -12,25 +15,19 @@ module.exports = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         
         try {
-            // Robust verification using clerkClient
-            const request = new Request('https://api.clerk.dev', {
+            // Robust verification using authenticateRequest
+            const request = new Request(req.protocol + '://' + req.get('host') + req.originalUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             const { isSignedIn, toAuth } = await clerkClient.authenticateRequest(request);
             
             if (!isSignedIn) {
-                console.error('Clerk Auth Failed: Not signed in');
-                return res.status(401).json({ message: 'Invalid or expired token.' });
+                return res.status(401).json({ message: 'Auth failed: Session not active.' });
             }
 
             const auth = toAuth();
-            
-            // Map Clerk ID to req.user
-            req.user = {
-                id: auth.userId,
-                // Clerk doesn't always send email in session, but we need the ID for DB operations
-            };
+            req.user = { id: auth.userId };
             
             next();
         } catch (verifyError) {
