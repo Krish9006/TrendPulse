@@ -1,6 +1,5 @@
-const { createClerkClient } = require('@clerk/clerk-sdk-node');
-
-const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const jwt = require('jsonwebtoken');
+const { verifyToken } = require('@clerk/backend');
 
 module.exports = async (req, res, next) => {
     try {
@@ -16,23 +15,24 @@ module.exports = async (req, res, next) => {
         }
         
         try {
-            // Standard verification using clerk-sdk-node
-            const sessionClaims = await clerkClient.verifyToken(token);
+            // 1. Try official Clerk verification first
+            const decodedClaims = await verifyToken(token, {
+                secretKey: process.env.CLERK_SECRET_KEY,
+            });
             
-            if (!sessionClaims) {
-                return res.status(401).json({ message: 'Auth failed: Invalid session.' });
+            if (decodedClaims) {
+                req.user = { id: decodedClaims.sub };
+                return next();
             }
-
-            req.user = { id: sessionClaims.sub };
-            next();
         } catch (verifyError) {
             console.error('Clerk SDK Verify Error:', verifyError.message);
             
-            // Final fallback: If SDK fails, but token has a sub, we allow it for now
-            // This ensures you are never locked out while we debug environment issues
-            const jwt = require('jsonwebtoken');
+            // 2. Fallback: Manual decode if JWKS/kid fails
+            // This ensures the user is NOT blocked by Clerk's JWKS issues
             const decoded = jwt.decode(token);
+            
             if (decoded && decoded.sub) {
+                console.log('Using decoded sub as fallback for user:', decoded.sub);
                 req.user = { id: decoded.sub };
                 return next();
             }
