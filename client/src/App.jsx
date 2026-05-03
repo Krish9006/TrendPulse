@@ -41,13 +41,17 @@ function AppRoutes() {
     );
 }
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <AppRoutes />
-            </Router>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId="909289297592-pue9e5f4n3667q366h6p3h6p3h6p3h6p.apps.googleusercontent.com"> {/* User should replace this */}
+            <AuthProvider>
+                <Router>
+                    <AppRoutes />
+                </Router>
+            </AuthProvider>
+        </GoogleOAuthProvider>
     );
 }
 

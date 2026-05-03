@@ -1,6 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const emailService = require('../services/emailService');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -104,10 +108,51 @@ router.get('/verify/:token', async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
+        // Send Welcome Email
+        await emailService.sendWelcomeEmail(user.email, user.name);
+
         const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
         res.redirect(`${clientUrl}/login?verified=true`);
     } catch (err) {
         res.status(500).send(err.message);
+    }
+});
+
+// POST /api/auth/google-login
+router.post('/google-login', async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) return res.status(400).json({ message: 'Google ID Token is required.' });
+
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { name, email, picture, sub: googleId } = ticket.getPayload();
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create user if doesn't exist
+            user = await User.create({
+                name,
+                email,
+                password: Math.random().toString(36).slice(-10), // Random password for OAuth users
+                isVerified: true // Google users are pre-verified
+            });
+            await emailService.sendWelcomeEmail(user.email, user.name);
+        }
+
+        const token = generateToken(user);
+
+        res.json({
+            message: 'Login successful!',
+            token,
+            user: { id: user._id, name: user.name, email: user.email, picture }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 
