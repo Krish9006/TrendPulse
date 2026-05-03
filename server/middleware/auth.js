@@ -1,9 +1,4 @@
-const { createClerkClient } = require('@clerk/backend');
-
-const clerkClient = createClerkClient({ 
-    secretKey: process.env.CLERK_SECRET_KEY,
-    publishableKey: process.env.CLERK_PUBLISHABLE_KEY
-});
+const { verifyToken } = require('@clerk/backend');
 
 module.exports = async (req, res, next) => {
     try {
@@ -15,11 +10,12 @@ module.exports = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         
         try {
-            // Use verifyToken directly for maximum compatibility
-            const decoded = await clerkClient.verifyToken(token);
+            // Correct way to verify token in @clerk/backend
+            const decoded = await verifyToken(token, {
+                secretKey: process.env.CLERK_SECRET_KEY,
+            });
             
             if (!decoded) {
-                console.error('Clerk Verify: Decoded token is null');
                 return res.status(401).json({ message: 'Auth failed: Invalid token.' });
             }
 
@@ -27,8 +23,6 @@ module.exports = async (req, res, next) => {
             next();
         } catch (verifyError) {
             console.error('Clerk Verify Error:', verifyError.message);
-            
-            // If verification fails, try a fallback check or provide a clearer error
             return res.status(401).json({ message: 'Auth failed: ' + verifyError.message });
         }
     } catch (err) {
