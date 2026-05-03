@@ -1,57 +1,51 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 
-// Protected route wrapper
-function PrivateRoute({ children }) {
-    const { user, loading } = useAuth();
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <div className="text-emerald-400 animate-pulse text-lg">Loading...</div>
-            </div>
-        );
-    }
-    return user ? children : <Navigate to="/login" replace />;
-}
+const CLERK_PUBLISHABLE_KEY = "pk_test_Y29taWMtc25hcHBlci00Ny5jbGVyay5hY2NvdW50cy5kZXYk"; // User should replace this with their actual key
 
 function AppRoutes() {
-    const { user } = useAuth();
     return (
         <Routes>
-            <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-            <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+            <Route path="/login/*" element={<Login />} />
+            <Route path="/signup/*" element={<Signup />} />
             <Route path="/" element={
-                <PrivateRoute>
-                    <Layout><Dashboard /></Layout>
-                </PrivateRoute>
+                <>
+                    <SignedIn>
+                        <Layout><Dashboard /></Layout>
+                    </SignedIn>
+                    <SignedOut>
+                        <RedirectToSignIn />
+                    </SignedOut>
+                </>
             } />
             <Route path="/pricing" element={
-                <PrivateRoute>
-                    <Layout><Pricing /></Layout>
-                </PrivateRoute>
+                <>
+                    <SignedIn>
+                        <Layout><Pricing /></Layout>
+                    </SignedIn>
+                    <SignedOut>
+                        <RedirectToSignIn />
+                    </SignedOut>
+                </>
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 }
 
-import { GoogleOAuthProvider } from '@react-oauth/google';
-
 function App() {
     return (
-        <GoogleOAuthProvider clientId="909289297592-pue9e5f4n3667q366h6p3h6p3h6p3h6p.apps.googleusercontent.com"> {/* User should replace this */}
-            <AuthProvider>
-                <Router>
-                    <AppRoutes />
-                </Router>
-            </AuthProvider>
-        </GoogleOAuthProvider>
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+            <Router>
+                <AppRoutes />
+            </Router>
+        </ClerkProvider>
     );
 }
 

@@ -1,6 +1,8 @@
-const jwt = require('jsonwebtoken');
+const { createClerkClient } = require('@clerk/backend');
 
-module.exports = (req, res, next) => {
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+
+module.exports = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -8,10 +10,23 @@ module.exports = (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'trendpulse_secret_key');
-        req.user = decoded; // { id, name, email }
-        next();
+        
+        try {
+            const sessionClaims = await clerkClient.verifyToken(token);
+            
+            // Clerk 'sub' is the user ID. We'll map it to req.user.id for compatibility
+            req.user = {
+                id: sessionClaims.sub,
+                email: sessionClaims.email,
+                name: sessionClaims.name
+            };
+            
+            next();
+        } catch (verifyError) {
+            console.error('Clerk Verification Error:', verifyError.message);
+            return res.status(401).json({ message: 'Invalid or expired token.' });
+        }
     } catch (err) {
-        return res.status(401).json({ message: 'Invalid or expired token. Please log in again.' });
+        res.status(500).json({ message: 'Auth middleware error.' });
     }
 };

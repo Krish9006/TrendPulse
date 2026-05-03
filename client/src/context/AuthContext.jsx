@@ -1,55 +1,43 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem('tp_token'));
-    const [loading, setLoading] = useState(true);
+    const { user, isLoaded } = useUser();
+    const { getToken, signOut } = useClerkAuth();
 
-    // On mount, verify token is still valid
     useEffect(() => {
-        const verifyToken = async () => {
-            const stored = localStorage.getItem('tp_token');
-            if (!stored) {
-                setLoading(false);
-                return;
-            }
-            try {
-                api.defaults.headers.common['Authorization'] = `Bearer ${stored}`;
-                const res = await api.get('/auth/me');
-                setUser(res.data);
-                setToken(stored);
-            } catch {
-                // Token invalid/expired
-                localStorage.removeItem('tp_token');
+        const updateApiToken = async () => {
+            if (isLoaded && user) {
+                const token = await getToken();
+                if (token) {
+                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                }
+            } else {
                 delete api.defaults.headers.common['Authorization'];
-                setToken(null);
-                setUser(null);
-            } finally {
-                setLoading(false);
             }
         };
-        verifyToken();
-    }, []);
-
-    const login = (userData, jwtToken) => {
-        localStorage.setItem('tp_token', jwtToken);
-        api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
-        setUser(userData);
-        setToken(jwtToken);
-    };
+        updateApiToken();
+    }, [user, isLoaded, getToken]);
 
     const logout = () => {
-        localStorage.removeItem('tp_token');
-        delete api.defaults.headers.common['Authorization'];
-        setUser(null);
-        setToken(null);
+        signOut();
+    };
+
+    const value = {
+        user: user ? { 
+            id: user.id, 
+            name: user.fullName, 
+            email: user.primaryEmailAddress?.emailAddress 
+        } : null,
+        loading: !isLoaded,
+        logout
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
