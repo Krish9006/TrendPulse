@@ -11,11 +11,15 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const updateApiToken = async () => {
             if (isLoaded && user) {
-                const token = await getToken();
-                if (token) {
-                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                try {
+                    const token = await getToken();
+                    if (token) {
+                        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                    }
+                } catch (err) {
+                    console.error("Error getting Clerk token:", err);
                 }
-            } else {
+            } else if (isLoaded) {
                 delete api.defaults.headers.common['Authorization'];
             }
         };
@@ -29,8 +33,8 @@ export function AuthProvider({ children }) {
     const value = {
         user: user ? { 
             id: user.id, 
-            name: user.fullName, 
-            email: user.primaryEmailAddress?.emailAddress 
+            name: user.fullName || user.firstName || user.username || 'User', 
+            email: user.primaryEmailAddress?.emailAddress || ''
         } : null,
         loading: !isLoaded,
         logout
@@ -44,5 +48,9 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-    return useContext(AuthContext);
+    const context = useContext(AuthContext);
+    if (!context) {
+        return { user: null, loading: true, logout: () => {} };
+    }
+    return context;
 }

@@ -39,6 +39,8 @@ function AppRoutes() {
     );
 }
 
+import { AuthProvider } from './context/AuthContext';
+
 function App() {
     return (
         <ClerkProvider 
@@ -46,9 +48,11 @@ function App() {
             afterSignInUrl="/"
             afterSignUpUrl="/"
         >
-            <Router>
-                <AppRoutes />
-            </Router>
+            <AuthProvider>
+                <Router>
+                    <AppRoutes />
+                </Router>
+            </AuthProvider>
         </ClerkProvider>
     );
 }
