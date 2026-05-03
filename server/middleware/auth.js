@@ -12,27 +12,33 @@ module.exports = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         
         try {
-            // Verify the token with Clerk
-            const decoded = await clerkClient.verifyToken(token);
+            // Robust verification using clerkClient
+            const request = new Request('https://api.clerk.dev', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const { isSignedIn, toAuth } = await clerkClient.authenticateRequest(request);
             
-            if (!decoded) {
-                return res.status(401).json({ message: 'Invalid token.' });
+            if (!isSignedIn) {
+                console.error('Clerk Auth Failed: Not signed in');
+                return res.status(401).json({ message: 'Invalid or expired token.' });
             }
 
-            // Map Clerk claims to req.user for app compatibility
+            const auth = toAuth();
+            
+            // Map Clerk ID to req.user
             req.user = {
-                id: decoded.sub,
-                email: decoded.email,
-                name: decoded.name || 'User'
+                id: auth.userId,
+                // Clerk doesn't always send email in session, but we need the ID for DB operations
             };
             
             next();
         } catch (verifyError) {
             console.error('Clerk Auth Error:', verifyError.message);
-            return res.status(401).json({ message: 'Invalid or expired token.' });
+            return res.status(401).json({ message: 'Auth failed: ' + verifyError.message });
         }
     } catch (err) {
-        console.error('Auth Middleware Exception:', err);
-        res.status(500).json({ message: 'Internal Auth Error' });
+        console.error('Critical Auth Error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
