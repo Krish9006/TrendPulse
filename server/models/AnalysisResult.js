@@ -7,15 +7,13 @@ const AnalysisResultSchema = new mongoose.Schema({
         required: true
     },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: String, // Support Clerk string IDs
         required: true
     },
     topic: {
         type: String,
         required: true
     },
-
     summary: {
         type: String,
         required: true
@@ -30,7 +28,7 @@ const AnalysisResultSchema = new mongoose.Schema({
     },
     metrics: [{
         label: String,
-        value: Number
+        value: mongoose.Schema.Types.Mixed // Flexible to handle AI noise
     }],
     sources: [{
         publisher: String,
