@@ -70,7 +70,7 @@ async function processTask(task) {
             try {
                 const User = require('../models/User');
                 const emailService = require('./emailService');
-                const user = await User.findById(task.userId);
+                const user = await User.findOne({ clerkId: task.userId });
                 
                 if (user && user.plan === 'pro') {
                     await emailService.sendDailyReport(user.email, user.name, [result]);

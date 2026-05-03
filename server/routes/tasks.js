@@ -40,10 +40,14 @@ router.post('/chat', async (req, res) => {
             }
 
             // Plan limits check
-            const user = await require('../models/User').findById(req.user.id);
+            const User = require('../models/User');
+            const user = await User.findOne({ clerkId: req.user.id });
             const taskCount = await Task.countDocuments({ userId: req.user.id });
             
-            if (user && user.plan === 'free' && taskCount >= 2) {
+            // Default to free plan if user not found in DB
+            const userPlan = user ? user.plan : 'free';
+            
+            if (userPlan === 'free' && taskCount >= 2) {
                 return res.status(403).json({
                     message: "Free plan is limited to 2 trackers. Please upgrade to Pro.",
                     action: 'UPGRADE_REQUIRED'
