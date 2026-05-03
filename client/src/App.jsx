@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 
 const CLERK_PUBLISHABLE_KEY = "pk_test_d2hvbGUtYW50LTEyLmNsZXJrLmFjY291bnRzLmRldiQ";
 
