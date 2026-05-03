@@ -7,19 +7,7 @@ const api = axios.create({
     },
 });
 
-// Add a request interceptor to include the auth token
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('tp_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+// Remove old localStorage interceptor as Clerk manages tokens differently
+// We will set the token dynamically in AuthContext
 
 export default api;
-

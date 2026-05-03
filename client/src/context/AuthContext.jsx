@@ -9,26 +9,23 @@ export function AuthProvider({ children }) {
     const { getToken, signOut } = useClerkAuth();
 
     useEffect(() => {
-        const updateApiToken = async () => {
-            if (isLoaded && user) {
-                try {
-                    // Force a fresh token to ensure kid is present
-                    const token = await getToken();
-                    if (token) {
-                        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                    }
-                } catch (err) {
-                    console.error("Error getting Clerk token:", err);
+        // Set up an interceptor that always gets a fresh token from Clerk
+        const interceptor = api.interceptors.request.use(async (config) => {
+            try {
+                const token = await getToken();
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
                 }
-            } else if (isLoaded) {
-                delete api.defaults.headers.common['Authorization'];
+            } catch (err) {
+                console.error("Clerk Token Interceptor Error:", err);
             }
+            return config;
+        });
+
+        return () => {
+            api.interceptors.request.eject(interceptor);
         };
-        updateApiToken();
-        // Set up an interval to refresh token every 30 seconds
-        const interval = setInterval(updateApiToken, 30000);
-        return () => clearInterval(interval);
-    }, [user, isLoaded, getToken]);
+    }, [getToken]);
 
     const logout = () => {
         signOut();
