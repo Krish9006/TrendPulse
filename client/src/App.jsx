@@ -7,7 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 
-const CLERK_PUBLISHABLE_KEY = "pk_test_Y29taWMtc25hcHBlci00Ny5jbGVyay5hY2NvdW50cy5kZXYk"; // User should replace this with their actual key
+const CLERK_PUBLISHABLE_KEY = "pk_test_d2hvbGUtYW50LTEyLmNsZXJrLmFjY291bnRzLmRldiQ";
 
 function AppRoutes() {
     return (
