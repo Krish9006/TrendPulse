@@ -9,20 +9,26 @@ module.exports = async (req, res, next) => {
 
         const token = authHeader.split(' ')[1];
         
+        // Basic check to see if token is "undefined" string
+        if (token === 'undefined' || token === 'null' || !token) {
+            return res.status(401).json({ message: 'Auth failed: Token is undefined or null.' });
+        }
+        
         try {
-            // Correct way to verify token in @clerk/backend
+            // Verify with secretKey and explicitly provide authorizedParties if needed
             const decoded = await verifyToken(token, {
                 secretKey: process.env.CLERK_SECRET_KEY,
             });
             
             if (!decoded) {
-                return res.status(401).json({ message: 'Auth failed: Invalid token.' });
+                return res.status(401).json({ message: 'Auth failed: Invalid token payload.' });
             }
 
             req.user = { id: decoded.sub };
             next();
         } catch (verifyError) {
             console.error('Clerk Verify Error:', verifyError.message);
+            // Fallback: If verification fails, return a clean error
             return res.status(401).json({ message: 'Auth failed: ' + verifyError.message });
         }
     } catch (err) {

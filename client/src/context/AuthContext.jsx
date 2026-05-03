@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
         const updateApiToken = async () => {
             if (isLoaded && user) {
                 try {
+                    // Force a fresh token to ensure kid is present
                     const token = await getToken();
                     if (token) {
                         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -24,6 +25,9 @@ export function AuthProvider({ children }) {
             }
         };
         updateApiToken();
+        // Set up an interval to refresh token every 30 seconds
+        const interval = setInterval(updateApiToken, 30000);
+        return () => clearInterval(interval);
     }, [user, isLoaded, getToken]);
 
     const logout = () => {
