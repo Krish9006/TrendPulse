@@ -12,21 +12,27 @@ module.exports = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         
         try {
-            const sessionClaims = await clerkClient.verifyToken(token);
+            // Verify the token with Clerk
+            const decoded = await clerkClient.verifyToken(token);
             
-            // Clerk 'sub' is the user ID. We'll map it to req.user.id for compatibility
+            if (!decoded) {
+                return res.status(401).json({ message: 'Invalid token.' });
+            }
+
+            // Map Clerk claims to req.user for app compatibility
             req.user = {
-                id: sessionClaims.sub,
-                email: sessionClaims.email,
-                name: sessionClaims.name
+                id: decoded.sub,
+                email: decoded.email,
+                name: decoded.name || 'User'
             };
             
             next();
         } catch (verifyError) {
-            console.error('Clerk Verification Error:', verifyError.message);
+            console.error('Clerk Auth Error:', verifyError.message);
             return res.status(401).json({ message: 'Invalid or expired token.' });
         }
     } catch (err) {
-        res.status(500).json({ message: 'Auth middleware error.' });
+        console.error('Auth Middleware Exception:', err);
+        res.status(500).json({ message: 'Internal Auth Error' });
     }
 };
