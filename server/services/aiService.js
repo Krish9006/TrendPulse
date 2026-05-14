@@ -201,14 +201,15 @@ class AIService {
                 messages: [
                     {
                         role: "system",
-                        content: `Analyze the provided real-time news about '${topic}'. 
+                        content: `Analyze the provided real-time news about '${topic}' and act as a trend analyst. 
+            Do not just give a dry summary of the articles. Tell the user exactly WHY this is trending, what the REAL news is, and the overall public vibe right now.
             You must return ONLY a JSON object with this exact structure:
             {
-              "summary": "concise executive summary",
+              "summary": "Engaging trend summary explaining what the actual news is and why it's trending",
               "sentiment": "Positive/Neutral/Negative",
-              "insight": "one key strategic insight",
-              "metrics": [ {"label": "Growth Rate", "value": 15} ], // Extract 2-4 numerical metrics or percentages. If none, infer reasonable dummy data.
-              "sources": [ {"publisher": "NewsName", "url": "http..."} ] // Extract publisher and URL from the text
+              "insight": "One deep strategic insight or future prediction about this trend",
+              "metrics": [ {"label": "Trend Momentum", "value": 85} ], // Extract or infer 2-4 numerical metrics, percentages, or trend scores.
+              "sources": [ {"publisher": "Google News", "url": "http..."} ] // Extract URL from the text if available
             }`
                     },
                     { role: "user", content: textData.substring(0, 4000) }
@@ -268,14 +269,15 @@ Return ONLY valid JSON, no markdown, no explanation:
             if (!model) return this.mockAnalyzeContent(topic);
 
             const prompt = `
-        Analyze this news about '${topic}':
+        Act as a trend analyst. Analyze this real-time news about '${topic}':
         "${textData.substring(0, 4000)}"
         
+        Do not just summarize. Tell the user WHY this is trending and what the REAL news is.
         Return JSON ONLY: { 
-            "summary": "concise summary", 
+            "summary": "Engaging trend summary explaining the actual news and public vibe", 
             "sentiment": "Positive/Neutral/Negative", 
-            "insight": "one key strategic insight",
-            "metrics": [ {"label": "Volume", "value": 75}, {"label": "Momentum", "value": 45} ] 
+            "insight": "One deep strategic insight or prediction",
+            "metrics": [ {"label": "Trend Score", "value": 85}, {"label": "Media Buzz", "value": 70} ] 
         }
       `;
 
