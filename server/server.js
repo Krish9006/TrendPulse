@@ -19,9 +19,14 @@ app.use(express.json());
 // For now, allow running without DB for testing if MONGO_URI is missing, but warn.
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/trendpulse';
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of waiting 30s
+})
+    .then(() => console.log('✅ MongoDB Connected Successfully'))
+    .catch(err => {
+        console.error('❌ MongoDB Connection Error:', err.message);
+        console.error('Ensure that MONGO_URI is set in your environment variables and your MongoDB Atlas Network Access is set to 0.0.0.0/0');
+    });
 
 // Routes (Placeholder)
 app.get('/', (req, res) => {
